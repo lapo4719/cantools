@@ -458,7 +458,7 @@ static inline uint8_t pack_left_shift_u{length}(
     uint8_t shift,
     uint8_t mask)
 {{
-    return (uint8_t)((uint8_t)(value << shift) & mask);
+    return (uint8_t)( ((uint8_t)(value << shift) & mask) | (~mask));
 }}
 '''
 
@@ -468,7 +468,7 @@ static inline uint8_t pack_right_shift_u{length}(
     uint8_t shift,
     uint8_t mask)
 {{
-    return (uint8_t)((uint8_t)(value >> shift) & mask);
+    return (uint8_t)( ((uint8_t)(value >> shift) & mask) | (~mask));
 }}
 '''
 
@@ -504,7 +504,7 @@ int {database_name}_{message_name}_pack(
         return (-EINVAL);
     }}
 
-    memset(&dst_p[0], 0, {message_length});
+    memset(&dst_p[0], 0xFF, {message_length});
 {pack_body}
     return ({message_length});
 }}
@@ -969,9 +969,9 @@ def _format_pack_code_signal(cg_message: "CodeGenMessage",
 
     for index, shift, shift_direction, mask in cg_signal.segments(invert_shift=False):
         if cg_signal.signal.conversion.is_float or cg_signal.signal.is_signed:
-            fmt = '    dst_p[{}] |= pack_{}_shift_u{}({}, {}u, 0x{:02x}u);'
+            fmt = '    dst_p[{}] &= pack_{}_shift_u{}({}, {}u, 0x{:02x}u);'
         else:
-            fmt = '    dst_p[{}] |= pack_{}_shift_u{}(src_p->{}, {}u, 0x{:02x}u);'
+            fmt = '    dst_p[{}] &= pack_{}_shift_u{}(src_p->{}, {}u, 0x{:02x}u);'
 
         line = fmt.format(index,
                           shift_direction,
