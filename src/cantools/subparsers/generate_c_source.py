@@ -1,17 +1,13 @@
 import argparse
 import os
 import os.path
-
 from .. import database
 from ..database.can.c_source import camel_to_snake_case, generate
-
-
 def _do_generate_c_source(args):
     dbase = database.load_file(args.infile,
                                encoding=args.encoding,
                                prune_choices=args.prune,
                                strict=not args.no_strict)
-
     if args.database_name is None:
         basename = os.path.basename(args.infile)
         database_name = os.path.splitext(basename)[0]
@@ -23,7 +19,6 @@ def _do_generate_c_source(args):
     filename_c = database_name + '.c'
     fuzzer_filename_c = database_name + '_fuzzer.c'
     fuzzer_filename_mk = database_name + '_fuzzer.mk'
-
     header, source, fuzzer_source, fuzzer_makefile = generate(
         dbase,
         database_name,
@@ -34,40 +29,27 @@ def _do_generate_c_source(args):
         args.bit_fields,
         args.use_float,
         args.node)
-
     os.makedirs(args.output_directory, exist_ok=True)
-
     path_h = os.path.join(args.output_directory, filename_h)
-
     with open(path_h, 'w') as fout:
         fout.write(header)
-
     path_c = os.path.join(args.output_directory, filename_c)
-
     with open(path_c, 'w') as fout:
         fout.write(source)
-
     print(f'Successfully generated {path_h} and {path_c}.')
-
     if args.generate_fuzzer:
         fuzzer_path_c = os.path.join(args.output_directory, fuzzer_filename_c)
-
         with open(fuzzer_path_c, 'w') as fout:
             fout.write(fuzzer_source)
-
         fuzzer_path_mk = os.path.join(args.output_directory, fuzzer_filename_mk)
-
         with open(fuzzer_path_mk, 'w') as fout:
             fout.write(fuzzer_makefile)
-
         print(f'Successfully generated {fuzzer_path_c} and {fuzzer_path_mk}.')
         print()
         print(
             'Run "make -f {}" to build and run the fuzzer. Requires a'.format(
                 fuzzer_filename_mk))
         print('recent version of clang.')
-
-
 def add_subparser(subparsers):
     generate_c_source_parser = subparsers.add_parser(
         'generate_c_source',
