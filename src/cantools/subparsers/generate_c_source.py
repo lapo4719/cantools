@@ -14,8 +14,7 @@ def _do_generate_c_source(args):
         database_name = camel_to_snake_case(database_name)
     else:
         database_name = args.database_name
-
-    filename_h = database_name + '.h'
+    filename_h = database_name + '_can.h'
     filename_c = database_name + '.c'
     fuzzer_filename_c = database_name + '_fuzzer.c'
     fuzzer_filename_mk = database_name + '_fuzzer.mk'
